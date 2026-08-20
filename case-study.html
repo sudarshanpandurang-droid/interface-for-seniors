@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Senior Communication Device — Clickable Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FBF6EE;
+    --page: #F1E9D8;
+    --surface: #FFFFFF;
+    --ink: #2B2420;
+    --ink-soft: #7A6E60;
+    --accent: #1F6F63;
+    --accent-soft: #E1EFEA;
+    --accent-ink: #123F38;
+    --warm: #E08A2C;
+    --warm-soft: #FBEDD8;
+    --warm-ink: #7A4A11;
+    --danger: #C1442C;
+    --danger-soft: #FBE4DE;
+    --success: #3F8253;
+    --success-soft: #E4F1E7;
+    --border: #E4DDD0;
+    --border-strong: #C9BEAA;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    font-family: 'Nunito', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 60px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0 0 4px;
+  }
+  .subhead {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 0 0 28px;
+    text-align: center;
+    max-width: 420px;
+  }
+  .phone {
+    width: 380px;
+    max-width: 92vw;
+    background: var(--surface);
+    border: 10px solid var(--ink);
+    border-radius: 44px;
+    padding: 18px 14px 22px;
+    position: relative;
+    box-sizing: content-box;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* shell */
+  .shell-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .tabs { display: flex; gap: 6px; flex: 1; }
+  .tab {
+    flex: 1; height: 62px; border-radius: 14px; border: 2px solid var(--border);
+    background: var(--surface); display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px; font-family: inherit; font-weight: 700; font-size: 12px;
+    color: var(--ink-soft); cursor: pointer; transition: transform .08s;
+  }
+  .tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink); }
+  .tab:active { transform: scale(.96); }
+  .tab .glyph { font-size: 20px; line-height: 1; }
+  .sos {
+    width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--danger);
+    background: var(--danger); color: #fff; font-weight: 800; font-size: 11px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .sos:active { transform: scale(.94); }
+
+  /* family grid */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .tile {
+    height: 148px; border-radius: 18px; border: 2px solid var(--border); background: var(--surface);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer; position: relative; font-family: inherit; transition: transform .1s, background .1s;
+  }
+  .tile:active { transform: scale(.96); background: var(--accent-soft); }
+  .avatar {
+    width: 62px; height: 62px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 22px; font-weight: 800;
+  }
+  .tile-label { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .dogear {
+    position: absolute; bottom: 0; right: 0; width: 0; height: 0;
+    border-style: solid; border-width: 0 0 20px 20px; border-color: transparent transparent var(--border-strong) transparent;
+    border-bottom-right-radius: 10px; cursor: pointer;
+  }
+  .secondary-row { display: flex; gap: 10px; }
+  .secondary-btn {
+    flex: 1; height: 54px; border-radius: 14px; border: 2px solid var(--border); background: var(--surface);
+    font-family: inherit; font-weight: 700; font-size: 13px; color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+  }
+  .secondary-btn:active { transform: scale(.96); }
+
+  .status-line { text-align: center; font-size: 13px; color: var(--ink-soft); min-height: 18px; margin-top: 10px; font-weight: 700; }
+
+  /* generic screen content */
+  .center-col { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px 6px; }
+  .big-avatar { width: 92px; height: 92px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; }
+  .name-big { font-size: 20px; font-weight: 800; margin: 0; }
+  .muted { font-size: 13px; color: var(--ink-soft); margin: 0; }
+
+  .round-btn { border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 22px; }
+  .round-btn:active { transform: scale(.93); }
+  .end-call { width: 84px; height: 84px; background: var(--danger); color: #fff; }
+  .accept-btn { width: 62px; height: 62px; background: var(--success); color: #fff; }
+  .decline-btn { width: 62px; height: 62px; background: var(--danger); color: #fff; }
+
+  /* knob */
+  .knob-wrap { position: relative; width: 220px; height: 190px; touch-action: none; }
+
+  /* dialpad */
+  .display-num { text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 2px; min-height: 30px; margin-bottom: 14px; }
+  .keypad { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; margin-bottom: 14px; }
+  .key {
+    height: 58px; border-radius: 14px; border: 2px solid var(--border); background: var(--surface);
+    font-family: inherit; font-size: 18px; font-weight: 800; cursor: pointer; color: var(--ink);
+  }
+  .key:active { transform: scale(.94); background: var(--accent-soft); }
+  .call-full-btn {
+    width: 100%; height: 56px; border-radius: 14px; border: none; background: var(--success); color: #fff;
+    font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer;
+  }
+
+  /* radio */
+  .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .preset {
+    height: 66px; border-radius: 14px; border: 2px solid var(--border); background: var(--surface);
+    font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; color: var(--ink);
+  }
+  .preset.playing { background: var(--warm-soft); border-color: var(--warm); color: var(--warm-ink); }
+  .play-btn { width: 58px; height: 58px; background: var(--success); color: #fff; }
+
+  /* message picker */
+  .msg-opt {
+    height: 56px; border-radius: 14px; border: 2px solid var(--border); background: var(--surface);
+    font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; color: var(--ink);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .msg-opt:active { transform: scale(.96); background: var(--accent-soft); }
+
+  /* call log */
+  .log-entry {
+    display: flex; align-items: center; gap: 12px; height: 68px; border-radius: 14px; border: 2px solid var(--border);
+    background: var(--surface); padding: 0 12px; text-align: left; cursor: pointer; font-family: inherit;
+  }
+  .log-entry:active { transform: scale(.97); }
+  .log-missed { border-color: var(--danger-soft); }
+  .log-name { font-size: 15px; font-weight: 800; margin: 0; }
+  .log-time { font-size: 12px; color: var(--ink-soft); margin: 2px 0 0; }
+
+  .back-link { font-size: 13px; font-weight: 700; color: var(--accent-ink); background: none; border: none; cursor: pointer; padding: 8px 0; font-family: inherit; }
+
+  .harness {
+    margin-top: 26px; width: 380px; max-width: 92vw; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 14px 16px;
+  }
+  .harness p { font-size: 12px; font-weight: 800; color: var(--ink-soft); margin: 0 0 10px; text-transform: uppercase; letter-spacing: .04em; }
+  .harness-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .harness button {
+    font-family: inherit; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 10px;
+    border: 1px solid var(--border-strong); background: var(--bg); color: var(--ink); cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>Senior communication device</h1>
+<p class="subhead">Clickable prototype — tap through the flow the same way it was designed: tabs to jump, dog-ear to flip, one tap to call.</p>
+
+<div class="phone">
+
+  <!-- FAMILY PAGE 1 -->
+  <section class="screen active" data-screen="family1">
+    <div class="shell-row">
+      <div class="tabs">
+        <button class="tab active" data-tab="family"><span class="glyph">👪</span>F Family</button>
+        <button class="tab" data-tab="dial"><span class="glyph">☏</span>D Dial</button>
+        <button class="tab" data-tab="radio"><span class="glyph">📻</span>R Radio</button>
+      </div>
+      <button class="sos" data-action="sos">SOS</button>
+    </div>
+    <div class="grid">
+      <button class="tile" data-name="Beta" data-color="accent">
+        <div class="avatar" style="background:var(--accent-soft); color:var(--accent-ink);">B</div>
+        <span class="tile-label">Beta</span>
+      </button>
+      <button class="tile" data-name="Didi" data-color="success">
+        <div class="avatar" style="background:var(--success-soft); color:#2C5C3B;">D</div>
+        <span class="tile-label">Didi</span>
+      </button>
+      <button class="tile" data-name="Nati" data-color="warm">
+        <div class="avatar" style="background:var(--warm-soft); color:var(--warm-ink);">N</div>
+        <span class="tile-label">Nati</span>
+      </button>
+      <button class="tile" data-name="Bahu" data-color="danger">
+        <div class="avatar" style="background:var(--danger-soft); color:#8C3320;">B</div>
+        <span class="tile-label">Bahu</span>
+        <div class="dogear" data-action="flip-to-2" title="More contacts"></div>
+      </button>
+    </div>
+    <div class="secondary-row">
+      <button class="secondary-btn" data-action="go-message">✉ Send message</button>
+      <button class="secondary-btn" data-action="go-log">🕐 Recent calls</button>
+    </div>
+    <p class="status-line" data-status></p>
+  </section>
+
+  <!-- FAMILY PAGE 2 -->
+  <section class="screen" data-screen="family2">
+    <div class="shell-row">
+      <div class="tabs">
+        <button class="tab active" data-tab="family"><span class="glyph">👪</span>F Family</button>
+        <button class="tab" data-tab="dial"><span class="glyph">☏</span>D Dial</button>
+        <button class="tab" data-tab="radio"><span class="glyph">📻</span>R Radio</button>
+      </div>
+      <button class="sos" data-action="sos">SOS</button>
+    </div>
+    <div class="grid">
+      <button class="tile" data-name="Pati" data-color="accent">
+        <div class="avatar" style="background:var(--accent-soft); color:var(--accent-ink);">P</div>
+        <span class="tile-label">Pati</span>
+      </button>
+      <button class="tile" data-name="Chachi" data-color="success">
+        <div class="avatar" style="background:var(--success-soft); color:#2C5C3B;">C</div>
+        <span class="tile-label">Chachi</span>
+      </button>
+    </div>
+    <button class="secondary-btn" style="margin-bottom:12px;" data-action="flip-to-1">← Back to page 1</button>
+    <p class="status-line" data-status></p>
+  </section>
+
+  <!-- DIAL PAD -->
+  <section class="screen" data-screen="dialpad">
+    <div class="shell-row">
+      <div class="tabs">
+        <button class="tab" data-tab="family"><span class="glyph">👪</span>F Family</button>
+        <button class="tab active" data-tab="dial"><span class="glyph">☏</span>D Dial</button>
+        <button class="tab" data-tab="radio"><span class="glyph">📻</span>R Radio</button>
+      </div>
+      <button class="sos" data-action="sos">SOS</button>
+    </div>
+    <div class="display-num" data-dial-display>&nbsp;</div>
+    <div class="keypad">
+      <button class="key" data-digit="1">1</button>
+      <button class="key" data-digit="2">2</button>
+      <button class="key" data-digit="3">3</button>
+      <button class="key" data-digit="4">4</button>
+      <button class="key" data-digit="5">5</button>
+      <button class="key" data-digit="6">6</button>
+      <button class="key" data-digit="7">7</button>
+      <button class="key" data-digit="8">8</button>
+      <button class="key" data-digit="9">9</button>
+      <button class="key" data-action="clear" style="font-size:13px;">Clear</button>
+      <button class="key" data-digit="0">0</button>
+      <button class="key" data-action="back" style="font-size:16px;">⌫</button>
+    </div>
+    <button class="call-full-btn" data-action="dial-call">Call</button>
+    <p class="status-line" data-status></p>
+  </section>
+
+  <!-- RADIO -->
+  <section class="screen" data-screen="radio">
+    <div class="shell-row">
+      <div class="tabs">
+        <button class="tab" data-tab="family"><span class="glyph">👪</span>F Family</button>
+        <button class="tab" data-tab="dial"><span class="glyph">☏</span>D Dial</button>
+        <button class="tab active" data-tab="radio"><span class="glyph">📻</span>R Radio</button>
+      </div>
+      <button class="sos" data-action="sos">SOS</button>
+    </div>
+    <div class="preset-grid">
+      <button class="preset" data-station="Bhajan">🙏 Bhajan</button>
+      <button class="preset" data-station="News">📰 News</button>
+      <button class="preset" data-station="Old songs">🎵 Old songs</button>
+      <button class="preset" data-station="Cricket">🏏 Cricket</button>
+    </div>
+    <p class="muted" style="text-align:center; margin-bottom:8px;" data-now-playing>No station selected</p>
+    <div style="display:flex; justify-content:center; margin-bottom:14px;">
+      <button class="round-btn play-btn" data-action="toggle-play">▶</button>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+      <p class="muted">Volume</p>
+      <div class="knob-wrap" data-knob="radio"></div>
+      <p class="muted" data-knob-readout="radio" style="font-weight:800; color:var(--ink);">Level 2</p>
+    </div>
+  </section>
+
+  <!-- CALLING (transient) -->
+  <section class="screen" data-screen="calling">
+    <div class="center-col">
+      <div class="big-avatar" data-calling-avatar style="background:var(--accent-soft); color:var(--accent-ink);">?</div>
+      <p class="name-big" data-calling-name>Calling...</p>
+      <p class="muted">Ringing</p>
+    </div>
+  </section>
+
+  <!-- IN CALL -->
+  <section class="screen" data-screen="incall">
+    <div class="center-col">
+      <div class="big-avatar" data-incall-avatar style="background:var(--accent-soft); color:var(--accent-ink);">?</div>
+      <div style="text-align:center;">
+        <p class="name-big" data-incall-name>Beta</p>
+        <p class="muted">Connected</p>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <p class="muted">Call volume</p>
+        <div class="knob-wrap" data-knob="incall"></div>
+        <p class="muted" data-knob-readout="incall" style="font-weight:800; color:var(--ink);">Level 2</p>
+      </div>
+      <button class="round-btn end-call" data-action="end-call">⏹</button>
+    </div>
+    <p class="status-line" data-status></p>
+  </section>
+
+  <!-- INCOMING KNOWN -->
+  <section class="screen" data-screen="incoming-known">
+    <div class="center-col">
+      <p class="muted" style="color:var(--accent-ink); font-weight:800;">Known caller</p>
+      <div class="big-avatar" style="background:var(--accent-soft); color:var(--accent-ink);">B</div>
+      <p class="name-big">Beta calling</p>
+      <div style="display:flex; gap:20px;">
+        <button class="round-btn decline-btn" data-action="decline">⏹</button>
+        <button class="round-btn accept-btn" data-action="accept-known">☏</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- INCOMING UNKNOWN -->
+  <section class="screen" data-screen="incoming-unknown">
+    <div class="center-col">
+      <p class="muted" style="color:var(--warm-ink); font-weight:800;">Unknown caller</p>
+      <div class="big-avatar" style="background:var(--border); color:var(--ink-soft);">?</div>
+      <p class="name-big">Unknown number</p>
+      <div style="display:flex; gap:20px; align-items:center;">
+        <button class="round-btn decline-btn" style="width:70px;height:70px;" data-action="decline">⏹</button>
+        <button class="round-btn accept-btn" style="width:52px;height:52px; background:var(--surface); border:2px solid var(--border-strong); color:var(--ink-soft);" data-action="accept-unknown">☏</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MESSAGE: PICK RECIPIENT -->
+  <section class="screen" data-screen="message-recipient">
+    <button class="back-link" data-action="back-to-family1">← Back</button>
+    <p class="muted" style="text-align:center; margin: 4px 0 12px; font-weight:800; color:var(--ink);">Choose who to message</p>
+    <div class="grid">
+      <button class="tile" data-name="Beta" data-msg-recipient="Beta">
+        <div class="avatar" style="background:var(--accent-soft); color:var(--accent-ink);">B</div>
+        <span class="tile-label">Beta</span>
+      </button>
+      <button class="tile" data-name="Didi" data-msg-recipient="Didi">
+        <div class="avatar" style="background:var(--success-soft); color:#2C5C3B;">D</div>
+        <span class="tile-label">Didi</span>
+      </button>
+      <button class="tile" data-name="Nati" data-msg-recipient="Nati">
+        <div class="avatar" style="background:var(--warm-soft); color:var(--warm-ink);">N</div>
+        <span class="tile-label">Nati</span>
+      </button>
+      <button class="tile" data-name="Bahu" data-msg-recipient="Bahu">
+        <div class="avatar" style="background:var(--danger-soft); color:#8C3320;">B</div>
+        <span class="tile-label">Bahu</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- MESSAGE PICKER -->
+  <section class="screen" data-screen="message-picker">
+    <button class="back-link" data-action="back-to-recipient">← Back</button>
+    <p class="muted" style="text-align:center; margin: 4px 0 14px; font-weight:800; color:var(--ink);" data-msg-to>Message to Beta</p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button class="msg-opt" data-msg="I'm fine">🙂 I'm fine</button>
+      <button class="msg-opt" data-msg="Call me">📞 Call me</button>
+      <button class="msg-opt" data-msg="Need help" style="border-color:var(--warm);">⚠ Need help</button>
+    </div>
+  </section>
+
+  <!-- SENT CONFIRM -->
+  <section class="screen" data-screen="sent-confirm">
+    <div class="center-col">
+      <div class="big-avatar" style="background:var(--success-soft); color:#2C5C3B;">✓</div>
+      <p class="name-big" data-sent-text>Sent</p>
+      <p class="muted">Returning to Family page...</p>
+    </div>
+  </section>
+
+  <!-- CALL LOG -->
+  <section class="screen" data-screen="call-log">
+    <button class="back-link" data-action="back-to-family1">← Back</button>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-top:6px;">
+      <button class="log-entry" data-name="Beta">
+        <div class="avatar" style="width:46px;height:46px;font-size:16px; background:var(--accent-soft); color:var(--accent-ink);">B</div>
+        <div style="flex:1;"><p class="log-name">Beta</p><p class="log-time">Today, 10:14 am</p></div>
+        <span style="color:var(--success);">↙</span>
+      </button>
+      <button class="log-entry log-missed" data-name="Nati">
+        <div class="avatar" style="width:46px;height:46px;font-size:16px; background:var(--warm-soft); color:var(--warm-ink);">N</div>
+        <div style="flex:1;"><p class="log-name" style="color:var(--danger);">Nati — missed</p><p class="log-time">Today, 9:02 am</p></div>
+        <span style="color:var(--danger);">✕</span>
+      </button>
+      <button class="log-entry" data-name="Didi">
+        <div class="avatar" style="width:46px;height:46px;font-size:16px; background:var(--success-soft); color:#2C5C3B;">D</div>
+        <div style="flex:1;"><p class="log-name">Didi</p><p class="log-time">Yesterday, 6:40 pm</p></div>
+        <span style="color:var(--ink-soft);">↗</span>
+      </button>
+    </div>
+    <p class="status-line" data-status></p>
+  </section>
+
+</div>
+
+<div class="harness">
+  <p>Prototype controls (not part of the real device)</p>
+  <div class="harness-row">
+    <button data-harness="incoming-known">Simulate incoming call (known)</button>
+    <button data-harness="incoming-unknown">Simulate incoming call (unknown)</button>
+    <button data-harness="reset">Reset to Family</button>
+  </div>
+</div>
+
+<script>
+function beep(freq, dur) {
+  var ctx = new (window.AudioContext || window.webkitAudioContext)();
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = 'square';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(); osc.stop(ctx.currentTime + dur);
+}
+
+var avatarColors = {
+  Beta: { bg: 'var(--accent-soft)', fg: 'var(--accent-ink)', letter: 'B' },
+  Didi: { bg: 'var(--success-soft)', fg: '#2C5C3B', letter: 'D' },
+  Nati: { bg: 'var(--warm-soft)', fg: 'var(--warm-ink)', letter: 'N' },
+  Bahu: { bg: 'var(--danger-soft)', fg: '#8C3320', letter: 'B' },
+  Pati: { bg: 'var(--accent-soft)', fg: 'var(--accent-ink)', letter: 'P' },
+  Chachi: { bg: 'var(--success-soft)', fg: '#2C5C3B', letter: 'C' }
+};
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(function(s) {
+    s.classList.toggle('active', s.getAttribute('data-screen') === name);
+  });
+}
+
+function setStatus(screenName, text, ms) {
+  var el = document.querySelector('[data-screen="' + screenName + '"] [data-status]');
+  if (!el) return;
+  el.textContent = text;
+  if (ms) setTimeout(function() { el.textContent = ''; }, ms);
+}
+
+function setActiveTab(tabName) {
+  document.querySelectorAll('.tab').forEach(function(t) {
+    t.classList.toggle('active', t.getAttribute('data-tab') === tabName);
+  });
+}
+
+document.querySelectorAll('.tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    beep(500, 0.06);
+    var t = tab.getAttribute('data-tab');
+    setActiveTab(t);
+    if (t === 'family') showScreen('family1');
+    if (t === 'dial') showScreen('dialpad');
+    if (t === 'radio') showScreen('radio');
+  });
+});
+
+document.querySelectorAll('[data-action="sos"]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    beep(880, 0.15);
+    var current = document.querySelector('.screen.active').getAttribute('data-screen');
+    setStatus(current, 'SOS alert would trigger here', 1800);
+  });
+});
+
+var pendingCallTarget = null;
+function startCallTo(name) {
+  pendingCallTarget = name;
+  var c = avatarColors[name] || { bg: 'var(--accent-soft)', fg: 'var(--accent-ink)', letter: name.charAt(0) };
+  var av = document.querySelector('[data-calling-avatar]');
+  av.style.background = c.bg; av.style.color = c.fg; av.textContent = c.letter;
+  document.querySelector('[data-calling-name]').textContent = 'Calling ' + name + '...';
+  showScreen('calling');
+  beep(600, 0.1);
+  setTimeout(function() {
+    var iav = document.querySelector('[data-incall-avatar]');
+    iav.style.background = c.bg; iav.style.color = c.fg; iav.textContent = c.letter;
+    document.querySelector('[data-incall-name]').textContent = name;
+    showScreen('incall');
+    beep(700, 0.1);
+  }, 1100);
+}
+
+document.querySelectorAll('[data-screen="family1"] .tile[data-name], [data-screen="family2"] .tile[data-name]').forEach(function(tile) {
+  tile.addEventListener('click', function() {
+    startCallTo(tile.getAttribute('data-name'));
+  });
+});
+
+document.querySelector('[data-action="flip-to-2"]').addEventListener('click', function(e) {
+  e.stopPropagation();
+  beep(450, 0.08);
+  showScreen('family2');
+});
+document.querySelector('[data-action="flip-to-1"]').addEventListener('click', function() {
+  beep(450, 0.08);
+  setActiveTab('family');
+  showScreen('family1');
+});
+
+document.querySelector('[data-action="go-message"]').addEventListener('click', function() {
+  beep(500, 0.06);
+  showScreen('message-recipient');
+});
+document.querySelector('[data-action="go-log"]').addEventListener('click', function() {
+  beep(500, 0.06);
+  showScreen('call-log');
+});
+document.querySelectorAll('[data-action="back-to-family1"]').forEach(function(b) {
+  b.addEventListener('click', function() {
+    beep(400, 0.05);
+    setActiveTab('family');
+    showScreen('family1');
+  });
+});
+document.querySelector('[data-action="back-to-recipient"]').addEventListener('click', function() {
+  beep(400, 0.05);
+  showScreen('message-recipient');
+});
+
+var msgRecipient = 'Beta';
+document.querySelectorAll('[data-msg-recipient]').forEach(function(tile) {
+  tile.addEventListener('click', function() {
+    beep(600, 0.07);
+    msgRecipient = tile.getAttribute('data-msg-recipient');
+    document.querySelector('[data-msg-to]').textContent = 'Message to ' + msgRecipient;
+    showScreen('message-picker');
+  });
+});
+
+document.querySelectorAll('.msg-opt').forEach(function(m) {
+  m.addEventListener('click', function() {
+    beep(650, 0.09);
+    document.querySelector('[data-sent-text]').textContent = 'Sent: "' + m.getAttribute('data-msg') + '"';
+    showScreen('sent-confirm');
+    setTimeout(function() {
+      setActiveTab('family');
+      showScreen('family1');
+    }, 1600);
+  });
+});
+
+document.querySelectorAll('.log-entry').forEach(function(e) {
+  e.addEventListener('click', function() {
+    startCallTo(e.getAttribute('data-name'));
+  });
+});
+
+document.querySelector('[data-action="end-call"]').addEventListener('click', function() {
+  beep(300, 0.15);
+  setStatus('incall', 'Call ended, returning to Family page', 1200);
+  setTimeout(function() {
+    setActiveTab('family');
+    showScreen('family1');
+  }, 900);
+});
+
+document.querySelector('[data-action="decline"]').addEventListener('click', function() {
+  beep(300, 0.12);
+  setActiveTab('family');
+  showScreen('family1');
+});
+document.querySelector('[data-action="accept-known"]').addEventListener('click', function() { startCallTo('Beta'); });
+document.querySelector('[data-action="accept-unknown"]').addEventListener('click', function() { startCallTo('Unknown'); });
+
+document.querySelectorAll('.harness [data-harness]').forEach(function(b) {
+  b.addEventListener('click', function() {
+    var v = b.getAttribute('data-harness');
+    if (v === 'reset') { setActiveTab('family'); showScreen('family1'); return; }
+    showScreen(v);
+  });
+});
+
+/* dial pad */
+var dialNumber = '';
+document.querySelectorAll('.key[data-digit]').forEach(function(k) {
+  k.addEventListener('click', function() {
+    beep(600, 0.06);
+    dialNumber += k.getAttribute('data-digit');
+    document.querySelector('[data-dial-display]').textContent = dialNumber;
+  });
+});
+document.querySelector('.key[data-action="back"]').addEventListener('click', function() {
+  beep(350, 0.05);
+  dialNumber = dialNumber.slice(0, -1);
+  document.querySelector('[data-dial-display]').textContent = dialNumber.length ? dialNumber : '\u00A0';
+});
+document.querySelector('.key[data-action="clear"]').addEventListener('click', function() {
+  beep(350, 0.05);
+  dialNumber = '';
+  document.querySelector('[data-dial-display]').textContent = '\u00A0';
+});
+document.querySelector('[data-action="dial-call"]').addEventListener('click', function() {
+  if (!dialNumber.length) { setStatus('dialpad', 'Enter a number first', 1500); return; }
+  startCallTo(dialNumber);
+  dialNumber = '';
+});
+
+/* radio */
+var radioPlaying = false;
+document.querySelectorAll('.preset').forEach(function(p) {
+  p.addEventListener('click', function() {
+    beep(600, 0.07);
+    document.querySelectorAll('.preset').forEach(function(x) { x.classList.remove('playing'); });
+    p.classList.add('playing');
+    document.querySelector('[data-now-playing]').textContent = p.getAttribute('data-station');
+    radioPlaying = true;
+    document.querySelector('[data-action="toggle-play"]').textContent = '❚❚';
+  });
+});
+document.querySelector('[data-action="toggle-play"]').addEventListener('click', function() {
+  if (!document.querySelector('.preset.playing')) return;
+  radioPlaying = !radioPlaying;
+  beep(radioPlaying ? 650 : 400, 0.08);
+  this.textContent = radioPlaying ? '❚❚' : '▶';
+});
+
+/* knob component, mounted twice */
+function mountKnob(container, readoutEl) {
+  var steps = [0,1,2,3,4];
+  var startAngle = -120, endAngle = 120;
+  var step = 2;
+  var cx = 110, cy = 100;
+
+  var svgNS = 'http://www.w3.org/2000/svg';
+  var svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('viewBox', '0 0 220 190');
+  svg.setAttribute('style', 'width:220px;height:190px;overflow:visible;');
+
+  var ticks = document.createElementNS(svgNS, 'g');
+  var ridges = document.createElementNS(svgNS, 'g');
+  svg.appendChild(ticks);
+
+  var outer = document.createElementNS(svgNS, 'circle');
+  outer.setAttribute('cx', cx); outer.setAttribute('cy', cy); outer.setAttribute('r', 64);
+  outer.setAttribute('fill', 'var(--bg)'); outer.setAttribute('stroke', 'var(--border-strong)'); outer.setAttribute('stroke-width', 1);
+  svg.appendChild(outer);
+  svg.appendChild(ridges);
+
+  [50, 42, 34].forEach(function(r) {
+    var c = document.createElementNS(svgNS, 'circle');
+    c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+    c.setAttribute('fill', r === 50 ? 'var(--surface)' : 'none');
+    c.setAttribute('stroke', 'var(--border)'); c.setAttribute('stroke-width', 0.5);
+    svg.appendChild(c);
+  });
+
+  var pointerGroup = document.createElementNS(svgNS, 'g');
+  var pointer = document.createElementNS(svgNS, 'line');
+  pointer.setAttribute('x1', cx); pointer.setAttribute('y1', cy);
+  pointer.setAttribute('x2', cx); pointer.setAttribute('y2', cy - 46);
+  pointer.setAttribute('stroke', 'var(--accent)'); pointer.setAttribute('stroke-width', 5); pointer.setAttribute('stroke-linecap', 'round');
+  pointerGroup.appendChild(pointer);
+  svg.appendChild(pointerGroup);
+
+  var hub = document.createElementNS(svgNS, 'circle');
+  hub.setAttribute('cx', cx); hub.setAttribute('cy', cy); hub.setAttribute('r', 9);
+  hub.setAttribute('fill', 'var(--accent)');
+  svg.appendChild(hub);
+
+  container.appendChild(svg);
+
+  function angleFor(s) { return startAngle + (s / (steps.length - 1)) * (endAngle - startAngle); }
+  function polar(r, angleDeg) {
+    var a = (angleDeg - 90) * Math.PI / 180;
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+  }
+
+  for (var i = 0; i < 26; i++) {
+    var ang = (360 / 26) * i;
+    var p1 = polar(54, ang), p2 = polar(63, ang);
+    var line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+    line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+    line.setAttribute('stroke', 'var(--border)'); line.setAttribute('stroke-width', 1.3);
+    ridges.appendChild(line);
+  }
+
+  steps.forEach(function(s) {
+    var angle = angleFor(s);
+    var p1 = polar(76, angle), p2 = polar(84, angle);
+    var line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+    line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+    line.setAttribute('stroke', 'var(--border-strong)'); line.setAttribute('stroke-width', 2);
+    ticks.appendChild(line);
+
+    var lp = polar(98, angle);
+    var text = document.createElementNS(svgNS, 'text');
+    text.setAttribute('x', lp.x); text.setAttribute('y', lp.y);
+    text.setAttribute('text-anchor', 'middle'); text.setAttribute('dominant-baseline', 'central');
+    text.setAttribute('font-size', '13'); text.setAttribute('font-weight', '800');
+    text.setAttribute('fill', 'var(--ink-soft)'); text.setAttribute('style', 'cursor:pointer; font-family:Nunito,sans-serif;');
+    text.textContent = s;
+    text.addEventListener('click', function() { setStep(s); });
+    ticks.appendChild(text);
+
+    var hit = document.createElementNS(svgNS, 'circle');
+    hit.setAttribute('cx', lp.x); hit.setAttribute('cy', lp.y); hit.setAttribute('r', 14);
+    hit.setAttribute('fill', 'transparent'); hit.setAttribute('style', 'cursor:pointer;');
+    hit.addEventListener('click', function() { setStep(s); });
+    ticks.appendChild(hit);
+  });
+
+  function setStep(s, silent) {
+    if (s === step && !silent) return;
+    step = s;
+    pointerGroup.setAttribute('transform', 'rotate(' + angleFor(step) + ' ' + cx + ' ' + cy + ')');
+    readoutEl.textContent = 'Level ' + step;
+    if (!silent) beep(450 + step * 60, 0.07);
+  }
+
+  var dragging = false;
+  container.addEventListener('pointerdown', function(e) { dragging = true; container.setPointerCapture(e.pointerId); });
+  container.addEventListener('pointermove', function(e) {
+    if (!dragging) return;
+    var rect = container.getBoundingClientRect();
+    var sx = 220 / rect.width, sy = 190 / rect.height;
+    var x = (e.clientX - rect.left) * sx - cx;
+    var y = (e.clientY - rect.top) * sy - cy;
+    var deg = Math.atan2(x, -y) * 180 / Math.PI;
+    var clamped = Math.max(startAngle, Math.min(endAngle, deg));
+    var frac = (clamped - startAngle) / (endAngle - startAngle);
+    var s = Math.round(frac * (steps.length - 1));
+    if (s !== step) setStep(s);
+  });
+  container.addEventListener('pointerup', function() { dragging = false; });
+  container.addEventListener('pointercancel', function() { dragging = false; });
+
+  setStep(step, true);
+}
+
+mountKnob(document.querySelector('[data-knob="incall"]'), document.querySelector('[data-knob-readout="incall"]'));
+mountKnob(document.querySelector('[data-knob="radio"]'), document.querySelector('[data-knob-readout="radio"]'));
+</script>
+
+</body>
+</html>
