@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -447,6 +448,21 @@ function beep(freq, dur) {
   osc.start(); osc.stop(ctx.currentTime + dur);
 }
 
+var dialingTimer = null;
+function startDialingSound(urgent) {
+  stopDialingSound();
+  var freq = urgent ? 620 : 425;
+  var interval = urgent ? 900 : 2000;
+  function ringCycle() {
+    beep(freq, urgent ? 0.5 : 0.9);
+  }
+  ringCycle();
+  dialingTimer = setInterval(ringCycle, interval);
+}
+function stopDialingSound() {
+  if (dialingTimer) { clearInterval(dialingTimer); dialingTimer = null; }
+}
+
 var avatarColors = {
   Beta: { bg: 'var(--accent-soft)', fg: 'var(--accent-ink)', letter: 'B' },
   Didi: { bg: 'var(--success-soft)', fg: '#2C5C3B', letter: 'D' },
@@ -457,6 +473,7 @@ var avatarColors = {
 };
 
 function showScreen(name) {
+  if (name !== 'calling') { stopDialingSound(); }
   document.querySelectorAll('.screen').forEach(function(s) {
     s.classList.toggle('active', s.getAttribute('data-screen') === name);
   });
@@ -489,27 +506,31 @@ document.querySelectorAll('.tab').forEach(function(tab) {
 document.querySelectorAll('[data-action="sos"]').forEach(function(btn) {
   btn.addEventListener('click', function() {
     beep(880, 0.15);
-    var current = document.querySelector('.screen.active').getAttribute('data-screen');
-    setStatus(current, 'SOS alert would trigger here', 1800);
+    startCallTo('Emergency');
   });
 });
 
 var pendingCallTarget = null;
 function startCallTo(name) {
   pendingCallTarget = name;
-  var c = avatarColors[name] || { bg: 'var(--accent-soft)', fg: 'var(--accent-ink)', letter: name.charAt(0) };
+  var isEmergency = name === 'Emergency';
+  var c = isEmergency
+    ? { bg: 'var(--danger-soft)', fg: 'var(--danger)', letter: '!' }
+    : (avatarColors[name] || { bg: 'var(--accent-soft)', fg: 'var(--accent-ink)', letter: name.charAt(0) });
   var av = document.querySelector('[data-calling-avatar]');
   av.style.background = c.bg; av.style.color = c.fg; av.textContent = c.letter;
-  document.querySelector('[data-calling-name]').textContent = 'Calling ' + name + '...';
+  document.querySelector('[data-calling-name]').textContent = isEmergency ? 'Calling for help...' : ('Calling ' + name + '...');
   showScreen('calling');
   beep(600, 0.1);
+  startDialingSound(isEmergency);
   setTimeout(function() {
+    stopDialingSound();
     var iav = document.querySelector('[data-incall-avatar]');
     iav.style.background = c.bg; iav.style.color = c.fg; iav.textContent = c.letter;
-    document.querySelector('[data-incall-name]').textContent = name;
+    document.querySelector('[data-incall-name]').textContent = isEmergency ? 'Emergency contact' : name;
     showScreen('incall');
     beep(700, 0.1);
-  }, 1100);
+  }, 8000);
 }
 
 document.querySelectorAll('[data-screen="family1"] .tile[data-name], [data-screen="family2"] .tile[data-name]').forEach(function(tile) {
